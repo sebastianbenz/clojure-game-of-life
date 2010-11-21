@@ -6,31 +6,27 @@
     (java.awt.event ActionListener )
     (java.awt Dimension)))
 
-
-
-
 (defn draw-grid 
-  [g columns rows cellsize]
+  [g columns rows position]
   (do
-    (doall (map #(.drawLine g  (* %1 cellsize) 0 (* %1 cellsize) (* rows cellsize) )(range 0 columns)))
-    (doall (map #(.drawLine g  0 (* %1 cellsize) (* columns cellsize) (* %1 cellsize) )(range 0 rows)))))
+    (doall (map #(.drawLine g  (position %1) 0 (position %1) (position rows))(range 0 columns)))
+    (doall (map #(.drawLine g  0 (position %1) (position columns) (position %1))(range 0 rows)))))
 
 (defn draw-box 
-  [g cellsize x y color]
-  (let [x (int (* x cellsize))
-        y (int (* y cellsize))]
-    (.setColor g color)
-    (.fillRect g x y cellsize cellsize)))
+  [g position x y color]
+  (.setColor g color)
+  (let [size (position 1)]
+    (.fillRect g (position x) (position y) size size)))
 
 (defn draw-cells
-  [g cellsize cells color]
-  (doall (map #(draw-box g cellsize (nth %1 0) (nth %1 1) color) cells) ))
+  [g position cells color]
+  (doall (map #(draw-box g position (nth %1 0) (nth %1 1) color) cells) ))
 
 (defn field-panel 
   [engine cells options]
   (let [columns (options :columns)
         rows (options :rows)
-        cellsize (options :cellsize)
+        position  #(* %1 (options :cellsize))
         new-cells (atom cells)
         previous-cells (atom ())
         panel (proxy [JPanel ActionListener] []
@@ -38,19 +34,16 @@
                 (paintComponent [g]
                   (let [removed (set/difference @previous-cells @new-cells)
                         added (set/difference @new-cells @previous-cells)]
-                        
-                  (draw-cells g cellsize removed Color/WHITE)
-                  (draw-cells g cellsize added Color/BLACK)
-                  (draw-grid g columns rows cellsize)))
+                    (draw-cells g position removed Color/WHITE)
+                    (draw-cells g position added Color/BLACK)
+                    (draw-grid g columns rows position)))
                 
                 (actionPerformed [e]
-                  (swap! previous-cells (fn [old] (deref new-cells)))
+                  (swap! previous-cells (fn [_] (deref new-cells)))
                   (swap! new-cells engine)
                   (.repaint this)))]
     (doto panel
-      (.setPreferredSize (Dimension. (* columns cellsize)  (* rows cellsize))))))
-
-
+      (.setPreferredSize (Dimension. (position columns)  (position rows))))))
 
 (defn field-frame 
   [panel]
