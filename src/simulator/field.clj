@@ -6,12 +6,6 @@
     (java.awt.event ActionListener )
     (java.awt Dimension)))
 
-(defn draw-grid 
-  [g columns rows position]
-  (do
-    (doall (map #(.drawLine g  (position %1) 0 (position %1) (position rows))(range 0 columns)))
-    (doall (map #(.drawLine g  0 (position %1) (position columns) (position %1))(range 0 rows)))))
-
 (defn draw-box 
   [g position x y color]
   (.setColor g color)
@@ -23,11 +17,11 @@
   (doall (map #(draw-box g position (nth %1 0) (nth %1 1) color) cells) ))
 
 (defn field-panel 
-  [engine cells options]
+  [engine seed options]
   (let [columns (options :columns)
         rows (options :rows)
         position  #(* %1 (options :cellsize))
-        new-cells (atom cells)
+        new-cells (atom seed)
         previous-cells (atom ())
         panel (proxy [JPanel ActionListener] []
                 
@@ -36,7 +30,6 @@
                         added (set/difference @new-cells @previous-cells)]
                     (draw-cells g position removed Color/WHITE)
                     (draw-cells g position added Color/BLACK)
-                    (draw-grid g columns rows position)))
                 
                 (actionPerformed [e]
                   (swap! previous-cells (fn [_] (deref new-cells)))
@@ -55,12 +48,12 @@
     .show))
 
 (defn run-game 
-  ([engine cells]  
-    (run-game engine cells  
+  ([engine seed]  
+    (run-game engine seed  
       {:columns 50 :rows 50 :speed 500 :cellsize 10}))
   
-  ([engine cells options] 
-    (let [panel (field-panel engine cells options)
+  ([engine seed options] 
+    (let [panel (field-panel engine seed options)
           frame (field-frame panel)
           timer (Timer. (options :speed) panel)]
       (.start timer))))
