@@ -23,8 +23,7 @@
         aCells (atom cells)
         panel (proxy [JPanel ActionListener] []
                 (paintComponent [g] 
-                  (let [oldState @aCells
-                        newState (engine oldState)]
+                  (let [state @aCells]
                     (loop [x 0]
                       (if (= x columns)
                         nil
@@ -33,7 +32,7 @@
                             (if (= y rows)
                               nil
                               (do
-                                (if (contains? @aCells [x y])
+                                (if (contains? state [x y])
                                   (draw-box g cellsize x y Color/BLACK)
                                   (draw-box g cellsize x y Color/WHITE))
                                 (recur (inc y)))) )
