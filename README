@@ -1,0 +1,17 @@
+# simulator
+
+A simulator for Conway's game of live written in clojure. 
+
+## Usage
+
+FIXME: write
+
+## Installation
+
+FIXME: write
+
+## License
+
+Copyright (C) 2010 Sebastian Benz
+
+Distributed under the Eclipse Public License, the same as Clojure.
