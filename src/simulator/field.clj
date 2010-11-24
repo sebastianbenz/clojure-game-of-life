@@ -6,15 +6,34 @@
     (java.awt.event ActionListener )
     (java.awt Dimension)))
 
+(defn draw-grid 
+  [g columns rows position]
+  (do
+    (.setColor g Color/GRAY)
+    (doall (map #(.drawLine g  (position %1) 0 (position %1) (position rows))(range 0 columns)))
+    (doall (map #(.drawLine g  0 (position %1) (position columns) (position %1))(range 0 rows)))))
+
 (defn draw-box 
   [g position x y color]
   (.setColor g color)
   (let [size (position 1)]
     (.fillRect g (position x) (position y) size size)))
 
+(defn x
+  [cell]
+  (nth cell 0))
+
+(defn y
+  [cell]
+  (nth cell 1))
+
 (defn draw-cells
   [g position cells color]
-  (doall (map #(draw-box g position (nth %1 0) (nth %1 1) color) cells) ))
+  (doall (map #(draw-box g position (x %1 ) (y %1) color) cells) ))
+
+(defn visible?
+  [cell rows columns]
+  (and (<= columns (x cell)) (<= rows (y cell))))
 
 (defn field-panel 
   [engine seed options]
@@ -30,6 +49,7 @@
                         added (set/difference @new-cells @previous-cells)]
                     (draw-cells g position removed Color/WHITE)
                     (draw-cells g position added Color/BLACK)
+                    (draw-grid g columns rows position)))
                 
                 (actionPerformed [e]
                   (swap! previous-cells (fn [_] (deref new-cells)))
@@ -51,7 +71,6 @@
   ([engine seed]  
     (run-game engine seed  
       {:columns 50 :rows 50 :speed 500 :cellsize 10}))
-  
   ([engine seed options] 
     (let [panel (field-panel engine seed options)
           frame (field-frame panel)

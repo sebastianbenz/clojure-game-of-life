@@ -1,74 +1,99 @@
 (ns engine.test.game
   (:use [lazytest.describe :only (describe it)])
-  (:use engine.game)
-  )
+  (:use engine.game))
 
 (def fixture [1 1])
-(def cell-with-no-neighbour #{fixture})
-(def cell-with-one-neighbour #{fixture [0 1]})
-(def cell-with-two-neighbours #{fixture [0 1] [1 2]})
-(def cell-with-three-neighbours #{fixture [0 1] [1 2] [1 0]})
-(def cell-with-four-neighbours #{fixture [0 1] [1 2] [1 0] [0 0]})
+(def no-neighbour #{fixture})
+(def one-neighbour #{fixture [0 1]})
+(def two-neighbours #{fixture [0 1] [1 2]})
+(def three-neighbours #{fixture [0 1] [1 2] [1 0]})
+(def four-neighbours #{fixture [0 1] [1 2] [1 0] [0 0]})
 
-(defn keeps
+(def left-neighbour #{fixture [0 1]})
+(def right-neighbour #{fixture [2 1]})
+(def upper-neighbour #{fixture [1 0]})
+(def lower-neighbour #{fixture [1 2]})
+(def upper-left-neighbour #{fixture [0 0]})
+(def upper-right-neighbour #{fixture [2 0]})
+(def lower-left-neighbour #{fixture [0 2]})
+(def lower-right-neighbour #{fixture [2 2]})
+
+(defn alive
   [cell field]
-   (contains? (set field) cell))
+   (contains? (set field) cell)) 
 
-(defn removes
+(defn dead
   [cell field]
-  (not (keeps cell field)))
-
-(println "result" (under-population cell-with-four-neighbours))
-;Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-
-(println "result: " (under-population cell-with-one-neighbour))
-
-(describe "Any live cell with fewer than two live neighbours dies, as if caused by under-population."
-  (it "removes cells with no neighbour"
-    (removes fixture (under-population cell-with-no-neighbour)))
-  (it "removes cells with one neighbour"
-    (removes fixture (under-population cell-with-one-neighbour)))
-  (it "keeps cells with two neighbours"
-    (keeps fixture (under-population cell-with-two-neighbours)))
-  (it "keeps cells with three neighbours"
-    (keeps fixture (under-population cell-with-three-neighbours)))
-  (it "removes cells with four neighbours"
-    (removes fixture (under-population cell-with-four-neighbours))))
-
-(def fixture2 [1 1])
-
-(def cell-with-left-neighbour #{fixture2 [0 1]})
-(def cell-with-right-neighbour #{fixture2 [2 1]})
-(def cell-with-upper-neighbour #{fixture2 [1 0]})
-(def cell-with-lower-neighbour #{fixture2 [1 2]})
-(def cell-with-upper-left-neighbour #{fixture2 [0 0]})
-(def cell-with-upper-right-neighbour #{fixture2 [2 0]})
-(def cell-with-lower-left-neighbour #{fixture2 [0 2]})
-(def cell-with-lower-right-neighbour #{fixture2 [2 2]})
-
-(describe "Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally adjacent."
-  (it "has left neighbours"
-    (= 1 (neighbours cell-with-left-neighbour fixture2)))
-  (it "has right neighbours"
-    (= 1 (neighbours cell-with-right-neighbour fixture2)))
-  (it "has upper neighbours"
-    (= 1 (neighbours cell-with-upper-neighbour fixture2)))
-  (it "has lower neighbours"
-    (= 1 (neighbours cell-with-lower-neighbour fixture2)))
-  (it "has upper-left neighbours"
-    (= 1 (neighbours cell-with-upper-left-neighbour fixture2)))
-  (it "has upper-right neighbours"
-    (= 1 (neighbours cell-with-upper-right-neighbour fixture2)))
-  (it "has lower-left neighbours"
-    (= 1 (neighbours cell-with-lower-left-neighbour fixture2)))
-  (it "has lower-right neighbours"
-    (= 1 (neighbours cell-with-lower-right-neighbour fixture2)))
-  (it "has two neighbours"
-    (= 2 (neighbours cell-with-two-neighbours fixture)))
-  (it "has three neighbours"
-    (= 3 (neighbours cell-with-three-neighbours fixture)))
-   (it "has four neighbours"
-    (= 4 (neighbours cell-with-four-neighbours fixture))))
+  (not (alive cell field)))
 
 
+(describe "blinker should"
+  (it "oscillate"
+    (= blinker (tick (tick blinker)))))
 
+(println "box " (population blinker))
+
+(describe "box should"
+  (it "not change"
+    (= box (tick (tick box)))))
+
+(describe "boat should"
+  (it "not change"
+    (= boat (tick (tick boat)))))
+
+(describe "population should"
+  (it "remove cells with no neighbour"
+    (dead fixture (population no-neighbour)))
+  (it "remove cells with one neighbour"
+    (dead fixture (population one-neighbour)))
+  (it "keep cells with two neighbours"
+    (alive fixture (population two-neighbours)))
+  (it "keep cells with three neighbours"
+    (alive fixture (population three-neighbours)))
+  (it "remove cells with four neighbours"
+    (dead fixture (population four-neighbours)))
+  (it "keep one cell of blinker"
+    (= #{[3 2]}  (population blinker))))
+
+(describe "alive-neighbours should return"
+  (it "left neighbour"
+    (= '([0 1]) (alive-neighbours left-neighbour fixture)))
+  (it "right neighbour"
+    (= '([2 1]) (alive-neighbours right-neighbour fixture)))
+  (it "upper neighbour"
+    (= '([1 0]) (alive-neighbours upper-neighbour fixture)))
+  (it "lower neighbour"
+    (= '([1 2]) (alive-neighbours lower-neighbour fixture)))
+  (it "upper-left neighbour"
+    (= '([0 0]) (alive-neighbours upper-left-neighbour fixture)))
+  (it "upper-right neighbour"
+    (= '([2 0]) (alive-neighbours upper-right-neighbour fixture)))
+  (it "lower-left neighbour"
+    (= '([0 2]) (alive-neighbours lower-left-neighbour fixture)))
+  (it "lower-right neighbour"
+    (= '([2 2]) (alive-neighbours lower-right-neighbour fixture)))
+  (it "two neighbours"
+    (= '([0 1] [1 2]) (alive-neighbours two-neighbours fixture)))
+  (it "three neighbours"
+    (= '((0 1) (1 0) (1 2)) (alive-neighbours three-neighbours fixture)))
+  (it "four neighbours"
+    (= '((0 0) (0 1) (1 0) (1 2)) (alive-neighbours four-neighbours fixture))))
+
+
+(describe "reproduction should"
+  (it "create cell for three neighbours"
+    (alive [1 1] (reproduction #{[0 0] [1 0] [0 1]})))
+  (it "create no cell for two neighbours"
+    (dead [1 1] (reproduction #{[0 0] [1 0] })))
+  (it "create no cell for one neighbours"
+    (dead [1 1] (reproduction #{[0 0] })))
+  (it "create no cell for four neighbours"
+    (dead [1 1] (reproduction #{[2 2] [0 0] [1 0] [0 1]}))))
+
+(println "tick " (tick #{[0 2] [2 1] [2 2]}))
+
+(describe "changes should be applied simultaneously"
+  (it "creates cells from cells about to die"
+    (alive [1 1] (tick #{[1 0] [0 1] [1 2]})))
+  (it "creates two cells from cells about to die"
+    (= #{[1 1] [1 2]} (tick #{[0 2] [2 1] [2 2]}))))
