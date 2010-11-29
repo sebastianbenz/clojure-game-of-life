@@ -18,20 +18,18 @@
 (def lower-left-neighbour #{fixture [0 2]})
 (def lower-right-neighbour #{fixture [2 2]})
 
-(defn alive
+(defn alive?
   [cell field]
    (contains? (set field) cell)) 
 
-(defn dead
+(defn dead?
   [cell field]
-  (not (alive cell field)))
+  (not (alive? cell field)))
 
 
 (describe "blinker should"
   (it "oscillate"
     (= blinker (tick (tick blinker)))))
-
-(println "box " (population blinker))
 
 (describe "box should"
   (it "not change"
@@ -41,19 +39,19 @@
   (it "not change"
     (= boat (tick (tick boat)))))
 
-(describe "population should"
+(describe "regulate should"
   (it "remove cells with no neighbour"
-    (dead fixture (population no-neighbour)))
+    (dead? fixture (regulate no-neighbour)))
   (it "remove cells with one neighbour"
-    (dead fixture (population one-neighbour)))
+    (dead? fixture (regulate one-neighbour)))
   (it "keep cells with two neighbours"
-    (alive fixture (population two-neighbours)))
+    (alive? fixture (regulate two-neighbours)))
   (it "keep cells with three neighbours"
-    (alive fixture (population three-neighbours)))
+    (alive? fixture (regulate three-neighbours)))
   (it "remove cells with four neighbours"
-    (dead fixture (population four-neighbours)))
+    (dead? fixture (regulate four-neighbours)))
   (it "keep one cell of blinker"
-    (= #{[3 2]}  (population blinker))))
+    (alive? [3 2]  (regulate blinker))))
 
 (describe "alive-neighbours should return"
   (it "left neighbour"
@@ -80,20 +78,18 @@
     (= '((0 0) (0 1) (1 0) (1 2)) (alive-neighbours four-neighbours fixture))))
 
 
-(describe "reproduction should"
+(describe "reproduce should"
   (it "create cell for three neighbours"
-    (alive [1 1] (reproduction #{[0 0] [1 0] [0 1]})))
+    (alive? [1 1] (reproduce #{[0 0] [1 0] [0 1]})))
   (it "create no cell for two neighbours"
-    (dead [1 1] (reproduction #{[0 0] [1 0] })))
+    (dead? [1 1] (reproduce #{[0 0] [1 0] })))
   (it "create no cell for one neighbours"
-    (dead [1 1] (reproduction #{[0 0] })))
+    (dead? [1 1] (reproduce #{[0 0] })))
   (it "create no cell for four neighbours"
-    (dead [1 1] (reproduction #{[2 2] [0 0] [1 0] [0 1]}))))
+    (dead? [1 1] (reproduce #{[2 2] [0 0] [1 0] [0 1]}))))
 
-(println "tick " (tick #{[0 2] [2 1] [2 2]}))
-
-(describe "changes should be applied simultaneously"
-  (it "creates cells from cells about to die"
-    (alive [1 1] (tick #{[1 0] [0 1] [1 2]})))
-  (it "creates two cells from cells about to die"
+(describe "rules should be applied simultaniously by "
+  (it "creating cells from cells about to die"
+    (alive? [1 1] (tick #{[1 0] [0 1] [1 2]})))
+  (it "creating two cells from cells about to die"
     (= #{[1 1] [1 2]} (tick #{[0 2] [2 1] [2 2]}))))

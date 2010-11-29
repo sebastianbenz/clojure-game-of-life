@@ -32,8 +32,9 @@
   (doall (map #(draw-box g position (x %1 ) (y %1) color) cells) ))
 
 (defn visible?
-  [cell rows columns]
-  (and (<= columns (x cell)) (<= rows (y cell))))
+  [rows columns cell]
+  (and (< (x cell) (+ columns 2)) (< (y cell) (+ rows 2))))
+
 
 (defn field-panel 
   [engine seed options]
@@ -42,8 +43,8 @@
         position  #(* %1 (options :cellsize))
         new-cells (atom seed)
         previous-cells (atom ())
+        visible-cell? (partial visible? rows columns)
         panel (proxy [JPanel ActionListener] []
-                
                 (paintComponent [g]
                   (let [removed (set/difference @previous-cells @new-cells)
                         added (set/difference @new-cells @previous-cells)]
@@ -53,7 +54,8 @@
                 
                 (actionPerformed [e]
                   (swap! previous-cells (fn [_] (deref new-cells)))
-                  (swap! new-cells engine)
+                  (swap! new-cells 
+                    #(set (filter visible-cell? (engine %))))
                   (.repaint this)))]
     (doto panel
       (.setPreferredSize (Dimension. (position columns)  (position rows))))))
@@ -66,6 +68,7 @@
     (.setBackground Color/WHITE)
     .pack
     .show))
+
 
 (defn run-game 
   ([engine seed]  

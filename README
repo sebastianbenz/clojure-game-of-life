@@ -1,14 +1,17 @@
 # simulator
 
-A simulator for Conway's game of live written in clojure. 
+An implementation of Conway's game of live together with a Swing GUI. Both written in clojure. 
 
 ## Usage
 
-FIXME: write
+with leinigen (https://github.com/technomancy/leiningen):
+
+cd clojure-game-of-life 
+lein repl
 
 ## Installation
 
-lein deps
+git clone git@github.com:sebastianbenz/clojure-game-of-life.git
 
 ## License
 
