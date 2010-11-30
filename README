@@ -1,4 +1,4 @@
-# simulator
+# clojure-game-of-life
 
 An implementation of Conway's game of live together with a Swing GUI. Both written in clojure. 
 
